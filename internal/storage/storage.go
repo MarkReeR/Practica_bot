@@ -18,7 +18,7 @@ type Storage struct {
 
 // NewStorage создаёт новое хранилище
 func NewStorage(dsn string) (*Storage, error) {
-        db, err := sql.Open("sqlite3", dsn)
+        db, err := sql.Open("sqlite", dsn) 
         if err != nil {
                 return nil, fmt.Errorf("ошибка подключения к БД: %w", err)
         }
