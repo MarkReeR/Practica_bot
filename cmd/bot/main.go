@@ -3,7 +3,7 @@ package main
 import (
         "context"
         "fmt"
-        "log"
+        "log/slog"
         "os"
         "os/signal"
         "syscall"
@@ -27,9 +27,11 @@ func main() {
         }
 
         // Настраиваем логгер
-        logger := log.New(os.Stdout, "[SCHEDULE-BOT] ", log.LstdFlags|log.Lshortfile)
+        logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+                Level: slog.LevelInfo,
+        }))
 
-        logger.Println("Запуск бота расписания...")
+        logger.Info("Запуск бота расписания...")
 
         // Создаём хранилище
         // Извлекаем путь к БД из DATABASE_URL
@@ -40,30 +42,30 @@ func main() {
 
         storage, err := storage.NewStorage(dbPath)
         if err != nil {
-                logger.Printf("Ошибка создания хранилища: %v", err)
+                logger.Error("Ошибка создания хранилища", "error", err)
                 os.Exit(1)
         }
         defer storage.Close()
 
-        logger.Printf("Хранилище инициализировано: %s", dbPath)
+        logger.Info("Хранилище инициализировано", "path", dbPath)
 
         // Создаём клиент Google Sheets
         sheetsClient, err := sheets.NewClient(cfg.GoogleAPIKey, cfg.GoogleSheetID, cfg.CacheTTL, logger)
         if err != nil {
-                logger.Printf("Ошибка создания клиента Google Sheets: %v", err)
+                logger.Error("Ошибка создания клиента Google Sheets", "error", err)
                 os.Exit(1)
         }
 
-        logger.Println("Клиент Google Sheets инициализирован")
+        logger.Info("Клиент Google Sheets инициализирован")
 
         // Создаём Telegram бота
         botAPI, err := tgbotapi.NewBotAPI(cfg.TelegramBotToken)
         if err != nil {
-                logger.Printf("Ошибка создания Telegram бота: %v", err)
+                logger.Error("Ошибка создания Telegram бота", "error", err)
                 os.Exit(1)
         }
 
-        logger.Printf("Telegram бот авторизован: %s", botAPI.Self.UserName)
+        logger.Info("Telegram бот авторизован", "username", botAPI.Self.UserName)
 
         // Создаём обработчик бота
         botHandler := bot.NewBot(botAPI, cfg, storage, sheetsClient, logger)
@@ -84,7 +86,7 @@ func main() {
 
         updates := botAPI.GetUpdatesChan(u)
 
-        logger.Println("Бот запущен и ожидает сообщения...")
+        logger.Info("Бот запущен и ожидает сообщения...")
 
         // Обработка сигналов завершения
         sigChan := make(chan os.Signal, 1)
@@ -96,7 +98,7 @@ func main() {
 
         // Ждём сигнал завершения
         sig := <-sigChan
-        logger.Printf("Получен сигнал завершения: %v", sig)
+        logger.Info("Получен сигнал завершения", "signal", sig)
 
         // Graceful shutdown
         cancel()
@@ -105,7 +107,7 @@ func main() {
         // Закрываем канал обновлений
         botAPI.StopReceivingUpdates()
 
-        logger.Println("Бот завершил работу")
+        logger.Info("Бот завершил работу")
 
         // Небольшая задержка перед выходом
         time.Sleep(500 * time.Millisecond)

@@ -3,7 +3,7 @@ package scheduler
 import (
         "context"
         "fmt"
-        "log"
+        "log/slog"
         "strings"
         "time"
 
@@ -21,7 +21,7 @@ type Scheduler struct {
         bot     *tgbotapi.BotAPI
         storage *storage.Storage
         sheets  *sheets.Client
-        logger  *log.Logger
+        logger  *slog.Logger
         done    chan struct{}
 }
 
@@ -30,7 +30,7 @@ func NewScheduler(
         bot *tgbotapi.BotAPI,
         storage *storage.Storage,
         sheetsClient *sheets.Client,
-        logger *log.Logger,
+        logger *slog.Logger,
 ) *Scheduler {
         return &Scheduler{
                 bot:     bot,
