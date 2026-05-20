@@ -3,7 +3,7 @@ package main
 import (
         "context"
         "fmt"
-        "log/slog"
+        "golang.org/x/exp/slog"
         "os"
         "os/signal"
         "syscall"

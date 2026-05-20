@@ -3,7 +3,7 @@ package bot
 import (
         "context"
         "fmt"
-        "log/slog"
+        "golang.org/x/exp/slog"
         "strings"
         "time"
 
@@ -190,18 +190,15 @@ func (b *Bot) handleSchedule(msg *tgbotapi.Message, user *models.User, args stri
         args = strings.ToLower(strings.TrimSpace(args))
 
         var targetDate time.Time
-        var dateLabel string
 
         switch args {
         case "завтра", "tomorrow":
                 targetDate = time.Now().AddDate(0, 0, 1)
-                dateLabel = "завтра"
         case "неделя", "week":
                 b.sendWeekSchedule(msg.Chat.ID, user.GroupCode)
                 return
         case "":
                 targetDate = time.Now()
-                dateLabel = "сегодня"
         default:
                 b.sendMessage(msg.Chat.ID, "❌ Неизвестный параметр. Используйте: /schedule, /schedule завтра, /schedule неделя")
                 return
@@ -556,7 +553,7 @@ func (b *Bot) handleGroupSelection(callback *tgbotapi.CallbackQuery, groupCode s
 
         // Отвечаем на callback
         answer := tgbotapi.NewCallback(callback.ID, fmt.Sprintf("Группа %s выбрана!", groupCode))
-        _, _ = b.bot.AnswerCallbackQuery(answer)
+        _, _ = b.bot.Request(answer)
 
         // Обновляем сообщение
         editMsg := tgbotapi.NewEditMessageText(callback.Message.Chat.ID, callback.Message.MessageID,
@@ -568,13 +565,13 @@ func (b *Bot) handleGroupSelection(callback *tgbotapi.CallbackQuery, groupCode s
 // handleDaySelection обрабатывает выбор дня (для будущего функционала)
 func (b *Bot) handleDaySelection(callback *tgbotapi.CallbackQuery, day string) {
         answer := tgbotapi.NewCallback(callback.ID, "Выбран день: "+day)
-        _, _ = b.bot.AnswerCallbackQuery(answer)
+        _, _ = b.bot.Request(answer)
 }
 
 // handleCancel обрабатывает отмену
 func (b *Bot) handleCancel(callback *tgbotapi.CallbackQuery) {
         answer := tgbotapi.NewCallback(callback.ID, "Отменено")
-        _, _ = b.bot.AnswerCallbackQuery(answer)
+        _, _ = b.bot.Request(answer)
 
         editMsg := tgbotapi.NewEditMessageText(callback.Message.Chat.ID, callback.Message.MessageID, "❌ Отменено")
         _, _ = b.bot.Send(editMsg)
