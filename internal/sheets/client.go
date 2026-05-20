@@ -4,7 +4,7 @@ import (
         "context"
         "encoding/json"
         "fmt"
-        "log"
+        "log/slog"
         "strings"
         "time"
 
@@ -21,7 +21,7 @@ type Client struct {
         apiKey   string
         cache    map[string]*cacheEntry
         cacheTTL time.Duration
-        logger   *log.Logger
+        logger   *slog.Logger
 }
 
 type cacheEntry struct {
@@ -30,7 +30,7 @@ type cacheEntry struct {
 }
 
 // NewClient создаёт новый клиент Google Sheets
-func NewClient(apiKey, sheetID string, cacheTTL time.Duration, logger *log.Logger) (*Client, error) {
+func NewClient(apiKey, sheetID string, cacheTTL time.Duration, logger *slog.Logger) (*Client, error) {
         ctx := context.Background()
 
         srv, err := sheets.NewService(ctx, option.WithAPIKey(apiKey))
@@ -87,7 +87,7 @@ func (c *Client) GetGroups(ctx context.Context) ([]models.Group, error) {
 
         // Кэшируем результат
         c.cache[cacheKey] = &cacheEntry{
-                      c.lessonsToCacheData(groups),
+                data:      c.lessonsToCacheData(groups),
                 expiresAt: time.Now().Add(c.cacheTTL),
         }
 
@@ -165,7 +165,7 @@ func (c *Client) GetSchedule(ctx context.Context, groupCode string, weekType str
 
         // Кэшируем результат
         c.cache[cacheKey] = &cacheEntry{
-                      lessons,
+                data:      lessons,
                 expiresAt: time.Now().Add(c.cacheTTL),
         }
 

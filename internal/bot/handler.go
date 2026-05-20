@@ -3,7 +3,7 @@ package bot
 import (
         "context"
         "fmt"
-        "log"
+        "log/slog"
         "strings"
         "time"
 
@@ -23,7 +23,7 @@ type Bot struct {
         config  *config.Config
         storage *storage.Storage
         sheets  *sheets.Client
-        logger  *log.Logger
+        logger  *slog.Logger
 }
 
 // NewBot создаёт новый экземпляр бота
@@ -32,7 +32,7 @@ func NewBot(
         cfg *config.Config,
         storage *storage.Storage,
         sheetsClient *sheets.Client,
-        logger *log.Logger,
+        logger *slog.Logger,
 ) *Bot {
         return &Bot{
                 bot:     bot,
