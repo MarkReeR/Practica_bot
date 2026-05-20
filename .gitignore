@@ -36,6 +36,9 @@ coverage/
 htmlcov/
 .coverage
 
+go.mod
+go.sum
+
 # Build artifacts
 dist/
 build/

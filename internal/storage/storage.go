@@ -6,7 +6,7 @@ import (
         "fmt"
         "time"
 
-        _ "github.com/mattn/go-sqlite3"
+        _ "modernc.org/sqlite"
 
         "schedule-bot/internal/models"
 )
