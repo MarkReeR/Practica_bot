@@ -16,6 +16,7 @@ bin/
 *.swp
 
 # Environment
+env
 .env
 .env.local
 .env.*
@@ -44,3 +45,6 @@ build/
 target/
 
 bot.db
+service-account.json
+go.mod
+go.sum

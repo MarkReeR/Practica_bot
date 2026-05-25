@@ -50,7 +50,7 @@ func main() {
         logger.Info("Хранилище инициализировано", "path", dbPath)
 
         // Создаём клиент Google Sheets
-        sheetsClient, err := sheets.NewClient(cfg.GoogleAPIKey, cfg.GoogleSheetID, cfg.CacheTTL, logger)
+        sheetsClient, err := sheets.NewClient(cfg.GoogleAPIKey, cfg.GoogleServiceAccountFile, cfg.GoogleSheetID, cfg.CacheTTL, logger)
         if err != nil {
                 logger.Error("Ошибка создания клиента Google Sheets", "error", err)
                 os.Exit(1)
