@@ -163,14 +163,11 @@ func (b *Bot) handleStart(msg *tgbotapi.Message, user *models.User) {
         // Если у пользователя уже есть группа, показываем её
         var message string
         if user.GroupCode != "" {
-                message = fmt.Sprintf("%s\n\n✅ Ваша текущая группа: *%s*", welcomeMsg, user.GroupCode)
+                message = fmt.Sprintf("%s\n\nВаша текущая группа: *%s*", welcomeMsg, user.GroupCode)
         } else {
-                message = welcomeMsg + "\n\n📝 Пожалуйста, выберите группу или введите её код:"
+                message = welcomeMsg + "\n\nПожалуйста, выберите группу или введите её код:"
         }
-
         b.sendMessageWithMarkdown(msg.Chat.ID, message)
-
-        // Показываем список групп
         b.sendGroupList(msg.Chat.ID)
 }
 

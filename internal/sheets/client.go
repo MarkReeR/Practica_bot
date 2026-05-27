@@ -18,16 +18,16 @@ import (
 
 // Client представляет клиент для работы с Google Sheets
 type Client struct {
-srv      *sheets.Service
-sheetID  string
-cache    map[string]*cacheEntry
-cacheTTL time.Duration
-logger   *slog.Logger
+	srv      *sheets.Service
+	sheetID  string
+	cache    map[string]*cacheEntry
+	cacheTTL time.Duration
+	logger   *slog.Logger
 }
 
 type cacheEntry struct {
-data      []models.Lesson
-expiresAt time.Time
+	data      []models.Lesson
+	expiresAt time.Time
 }
 
 // NewClient создаёт новый клиент Google Sheets
@@ -55,58 +55,58 @@ func NewClient(apiKey, credentialsFile, sheetID string, cacheTTL time.Duration, 
                 logger.Info("Инициализация Google Sheets через API Key")
         }
 	return &Client{
-	srv:      srv,
-	sheetID:  sheetID,
-	cache:    make(map[string]*cacheEntry),
-	cacheTTL: cacheTTL,
-	logger:   logger,
+		srv:      srv,
+		sheetID:  sheetID,
+		cache:    make(map[string]*cacheEntry),
+		cacheTTL: cacheTTL,
+		logger:   logger,
 	}, nil
 }
 
 // GetGroups получает список всех групп из таблицы
 func (c *Client) GetGroups(ctx context.Context) ([]models.Group, error) {
-cacheKey := "groups_list"
+	cacheKey := "groups_list"
 
-// Проверяем кэш
-if entry, ok := c.cache[cacheKey]; ok && time.Now().Before(entry.expiresAt) {
-c.logger.Debug("Группы получены из кэша")
-// Преобразуем данные из кэша в группы
-groups := make([]models.Group, 0)
-seen := make(map[string]bool)
-for _, lesson := range entry.data {
-if !seen[lesson.GroupCode] {
-seen[lesson.GroupCode] = true
-groups = append(groups, models.Group{
-Code:      lesson.GroupCode,
-Specialty: lesson.Specialty,
-})
-}
-}
-return groups, nil
-}
+	// Проверяем кэш
+	if entry, ok := c.cache[cacheKey]; ok && time.Now().Before(entry.expiresAt) {
+		c.logger.Debug("Группы получены из кэша")
+		// Преобразуем данные из кэша в группы
+		groups := make([]models.Group, 0)
+		seen := make(map[string]bool)
+		for _, lesson := range entry.data {
+			if !seen[lesson.GroupCode] {
+				seen[lesson.GroupCode] = true
+				groups = append(groups, models.Group{
+					Code:      lesson.GroupCode,
+					Specialty: lesson.Specialty,
+				})
+			}
+		}
+		return groups, nil
+	}
 
-// Читаем данные из таблицы
-readRange := "Лист1!A1:Z100" // Предполагаемый диапазон
+	// Читаем данные из таблицы
+	readRange := "Лист1!A1:Z100" // Предполагаемый диапазон
 
-resp, err := c.srv.Spreadsheets.Values.Get(c.sheetID, readRange).Do()
-if err != nil {
-return nil, c.handleError(err)
-}
+	resp, err := c.srv.Spreadsheets.Values.Get(c.sheetID, readRange).Do()
+	if err != nil {
+		return nil, c.handleError(err)
+	}
 
-if len(resp.Values) == 0 {
-return nil, fmt.Errorf("таблица пуста")
-}
+	if len(resp.Values) == 0 {
+		return nil, fmt.Errorf("таблица пуста")
+	}
 
-// Парсим заголовки для получения кодов групп и специальностей
-groups := c.parseGroups(resp.Values)
+	// Парсим заголовки для получения кодов групп и специальностей
+	groups := c.parseGroups(resp.Values)
 
-// Кэшируем результат
-c.cache[cacheKey] = &cacheEntry{
-data:      c.lessonsToCacheData(groups),
-expiresAt: time.Now().Add(c.cacheTTL),
-}
+	// Кэшируем результат
+	c.cache[cacheKey] = &cacheEntry{
+		data:      c.lessonsToCacheData(groups),
+		expiresAt: time.Now().Add(c.cacheTTL),
+	}
 
-return groups, nil
+	return groups, nil
 }
 
 // parseGroups извлекает информацию о группах из заголовков таблицы
